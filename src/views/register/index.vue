@@ -14,7 +14,7 @@
             </el-form-item>
             <el-form-item>
                 <el-button class="btn-reg" type="primary" @click="onSubmit">注册</el-button>
-                <el-link  type="info">登录</el-link>
+                <el-link  type="info" @click="$router.push('/login')">登录</el-link>
             </el-form-item>
             
             </el-form>
@@ -24,6 +24,7 @@
 </template>
 
 <script>
+import { registerAPI } from '@/api'
 export default{
     name: 'my-register',
     data(){
@@ -69,13 +70,20 @@ export default{
     },
     methods: {
         onSubmit() {
-            this.$refs.form.validate(valid=> {
-                if(valid){
-                    console.log('成功')
-                }else{
-                    return false
-                }
-            })
+            this.$refs.form.validate(async valid => {
+            if (!valid) return false
+            // 尝试拿到用户输入的内容
+            // console.log(this.regForm)
+            // 1. 调用注册接口
+            const { data: res } = await registerAPI(this.form)
+            console.log(res)
+            // 2. 注册失败，提示用户
+            if (res.code !== 0) return this.$message.error(res.message)
+            // 3. 注册成功，提示用户
+            this.$message.success(res.message)
+            // 4. 跳转到登录页面
+            this.$router.push('/login')
+             })
         }
     }
 }
