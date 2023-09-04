@@ -32,6 +32,7 @@
 
 <script>
 import { loginAPI } from "@/api/index"
+import { mapMutations } from "vuex"
 export default {
   name: 'my-login',
   data () {
@@ -55,12 +56,14 @@ export default {
     }
   },
   methods: {
+    ...mapMutations(['updateToken']),
     loginFn() {
         this.$refs.loginRef.validate(async valid=> {
           if(valid) {
             const { data:res }= await loginAPI(this.loginForm)
             console.log(res)
             if(res.code !==0) return this.$message.error(res.message)
+            this.updateToken(res.token)
             return this.$message.success(res.message)
           }else{
             return false
