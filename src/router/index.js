@@ -14,6 +14,10 @@ const routes = [
     component: ()=>import('@/views/login/index.vue')
   },
   {
+    path: '/home',
+    component: ()=>import('@/views/layout/index.vue')
+  },
+  {
     path: '/',
     redirect: '/login'
   }

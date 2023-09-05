@@ -64,7 +64,9 @@ export default {
             console.log(res)
             if(res.code !==0) return this.$message.error(res.message)
             this.updateToken(res.token)
+            this.$router.push('/home')
             return this.$message.success(res.message)
+            
           }else{
             return false
           }
