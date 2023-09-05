@@ -27,7 +27,53 @@
     </el-header>
     <el-container>
       <!-- 侧边栏区域 -->
-      <el-aside width="200px">Aside</el-aside>
+     <!-- 左侧边栏的用户信息 -->
+    <el-aside width="200px">
+        <div class="user-box">
+            <img :src="userimg" alt="" v-if="userimg" />
+            <img src="../../assets/logo.png" alt="" v-else />
+            <span>欢迎 {{ nickname || username }}</span>
+        </div>
+
+        <el-menu
+          default-active="/home"
+          class="el-menu-vertical-demo"
+          background-color="#23262E"
+          text-color="#fff"
+          active-text-color="#409EFF"
+          mode="vertical"
+          unique-opened
+          collapse-transition
+          router
+        >
+          <!-- 渲染菜单 -->
+         <template v-for="item in menus">
+            <el-menu-item v-if="!item.children" :index="item.indexPath" 
+            :key="item.indexPath">
+              <template slot="title">
+                <i :class="item.icon"></i>
+                <span>{{ item.title }}</span>
+              </template>
+            </el-menu-item>
+
+            <el-submenu v-else :index="item.indexPath" :key="item.indexPath">
+              <template slot="title">
+                <i :class="item.icon"></i>
+                <span>{{ item.title }}</span>
+              </template>
+
+              <el-menu-item v-for="obj in item.children" :key="obj.indexPath"
+              :index="obj.indexPath"
+              >
+                <i :class="obj.icon"></i>
+                <span>{{ obj.title }}</span>
+              </el-menu-item>
+
+            </el-submenu>
+         </template>
+
+        </el-menu>
+      </el-aside>
       <el-container>
         <!-- 页面主体区域 -->
         <el-main>
@@ -41,8 +87,18 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+import {getmenusAPI} from '@/api/index'
 export default {
   name: 'my-layout',
+  data() {
+    return {
+      menus: []
+    }
+  },
+  computed:{
+    ...mapGetters(['username','nickname','userimg'])
+  },
   methods:{
     loginout () {
       this.$confirm('您确认退出登录吗？', '提示', {
@@ -50,14 +106,29 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(()=>{
-        this.$store.commit('updateToken',' ')
+        this.$store.commit('updateToken','')
+        this.$store.commit('updateUserInfo','')
         this.$router.push('/login')
         this.$message({
         type: 'success',
         message: '退出登录'
       });
     }).catch((err)=>{err})
+    },
+      handleOpen(key, keyPath) {
+        console.log(key, keyPath);
+      },
+      handleClose(key, keyPath) {
+        console.log(key, keyPath);
+      },
+      async getMenusListFn () {
+      const {data:res} = await getmenusAPI()
+      this.menus = res.data
+      console.log(res.data)
     }
+  }, 
+  created(){
+    this.getMenusListFn()
   }
 }
 </script>
@@ -95,5 +166,26 @@ export default {
   background-color: #fff;
   margin-right: 10px;
   object-fit: cover;
+}
+.user-box {
+  height: 70px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-top: 1px solid #000;
+  border-bottom: 1px solid #000;
+  user-select: none;
+  img {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background-color: #fff;
+    margin-right: 15px;
+    object-fit: cover;
+  }
+  span {
+    color: white;
+    font-size: 12px;
+  }
 }
 </style>

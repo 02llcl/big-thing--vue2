@@ -64,6 +64,7 @@ export default {
             console.log(res)
             if(res.code !==0) return this.$message.error(res.message)
             this.updateToken(res.token)
+            this.$store.dispatch('initUserInfo')
             this.$router.push('/home')
             return this.$message.success(res.message)
             

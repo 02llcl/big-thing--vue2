@@ -32,3 +32,13 @@ export const getuserinfroAPI=()=>{
     }
   })
 }
+
+export const getmenusAPI=()=>{
+  return request({
+    url: '/my/menus',
+    method:'get',
+    headers:{
+      Authorization: store.state.token
+    }
+  })
+}
