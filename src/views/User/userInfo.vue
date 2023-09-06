@@ -25,7 +25,7 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="submitFn">提交修改</el-button>
-          <el-button>重置</el-button>
+          <el-button @click="resorefn">重置</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -66,6 +66,7 @@ export default {
                     if(res.code==0){
                         this.$message.success('用户信息更新成功')
                         this.$store.dispatch('initUserInfo')
+                        this.resorefn()
                     }else{
                         this.$message.error('用户信息更新失败')
                     }
@@ -73,6 +74,10 @@ export default {
                     return false
                 }
             })
+        },
+        resorefn() {
+          this.userForm.nickname=''
+            this.userForm.email=''
         }
     }
   }

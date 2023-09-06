@@ -49,3 +49,26 @@ export const updateuserAPI=({id,username,nickname,email,user_pic})=>{
     }
   })
 }
+
+export const updateuserimgAPI = (avatar) => {
+  return request({
+    url: '/my/update/avatar',
+    method: 'PATCH',
+    data: {
+      avatar
+    }
+  })
+}
+
+export const updataPwdAPI = ({ old_pwd, new_pwd, re_pwd }) => {
+  return request({
+    url: '/my/updatepwd',
+    method: 'PATCH',
+    data: {
+      old_pwd,
+      new_pwd,
+      re_pwd
+    }
+  })
+}
+
