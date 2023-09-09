@@ -118,7 +118,7 @@ export const postCateAPI=(fd)=>{
   })
 }
 
-export const getArticleListAPI = ({ pagenum, pagesize, cate_id, state }) => {
+export const getArticleListAPI= ({ pagenum, pagesize, cate_id, state }) => {
   return request({
     url: '/my/article/list',
     params: {

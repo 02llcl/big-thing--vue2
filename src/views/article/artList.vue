@@ -29,8 +29,28 @@
             </div>
 
             <!-- 文章表格区域 -->
-
+            <el-table :data="artList" style="width: 100%;" border stripe>
+            <el-table-column label="文章标题" prop="title"></el-table-column>
+            <el-table-column label="分类" prop="cate_name"></el-table-column>
+            <el-table-column label="发表时间" prop="pub_date">
+                <template v-slot="{ row}">
+                    <span>{{ $formatDate(row.pub_date) }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="状态" prop="state"></el-table-column>
+            <el-table-column label="操作"></el-table-column>
+            </el-table>
             <!-- 分页区域 -->
+            <el-pagination
+            @size-change="handleSizeChangeFn"
+            @current-change="handleCurrentChangeFn"
+            :current-page.sync="q.pagenum"
+            :page-sizes="[2, 3, 5, 10]"
+            :page-size.sync="q.pagesize"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="total"
+            >
+            </el-pagination>
         </el-card>
 
         <!-- 发表文章的 Dialog 对话框 -->
@@ -77,7 +97,7 @@
   
 <script>
 import defaultImg from '@/assets/cover.jpg'
-import { getArtCateListAPI,postCateAPI} from '@/api/index'
+import { getArtCateListAPI,postCateAPI,getArticleListAPI} from '@/api/index'
 export default {
     name: 'ArtList',
     data() {
@@ -85,7 +105,7 @@ export default {
             // 查询参数对象
             q: {
                 pagenum: 1,
-                pagesize: 2,
+                pagesize: 6,
                 cate_id: '',
                 state: ''
             },
@@ -105,11 +125,14 @@ export default {
                 cate_id: [{ required: true, message: '请选择文章标题', trigger: 'change' }],
                 content: [{ required: true, message: '请输入文章内容', trigger: 'blur' }]
             },
-            cateList: []
+            cateList: [],
+            artList: [], // 文章的列表数据
+            total: 0 // 总数据条数
         }
     },
     created() {
         this.getCateListFn()
+        this.initArtListFn()
     },
     methods: {
         async handleClose(done) {
@@ -181,7 +204,30 @@ export default {
 
             // 关闭对话框
             this.pubDialogVisible = false
+            this.initArtListFn()
         })
+        },
+        // 初始化文章列表
+        async initArtListFn () {
+            const { data: res } = await getArticleListAPI(this.q)
+
+            if (res.code !== 0) return this.$message.error('获取文章列表失败!')
+            console.log(res);
+            this.artList = res.data
+            this.total = res.total
+        },
+        handleSizeChangeFn(sizes){
+            this.q.pagesize = sizes
+            // 默认展示第一页数据
+            this.q.pagenum = 1
+            // 重新发起请求
+            this.initArtListFn()
+        },
+        handleCurrentChangeFn(nowpage){
+              // 为页码值赋值
+            this.q.pagenum = nowpage
+            // 重新发起请求
+            this.initArtListFn()
         }
     }
 }
@@ -206,6 +252,9 @@ export default {
   width: 400px;
   height: 280px;
   object-fit: cover;
+}
+.el-pagination {
+  margin-top: 15px;
 }
 </style>
   
