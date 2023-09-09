@@ -18,7 +18,7 @@
             <img src="../../assets/logo.png" alt="" class="avatar" />
             <span>个人中心</span>
           </template>
-          <el-menu-item index="1-1"><i class="el-icon-s-operation"></i>基本资料</el-menu-item>
+          <el-menu-item index="1-1"><i class="el-icon-s-operation"> </i>基本资料</el-menu-item>
           <el-menu-item index="1-2"><i class="el-icon-camera"></i>更换头像</el-menu-item>
           <el-menu-item index="1-3"><i class="el-icon-key"></i>重置密码</el-menu-item>
         </el-submenu>
@@ -124,6 +124,9 @@ export default {
       async getMenusListFn () {
       const {data:res} = await getmenusAPI()
       this.menus = res.data
+    },
+    gouserinfo(){
+      this.$router.push('/userInfo')
     }
   }, 
   created(){

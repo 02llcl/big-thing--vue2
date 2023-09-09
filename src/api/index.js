@@ -110,3 +110,22 @@ export const delArtCateAPI=(id)=>{
   })
 }
 
+export const postCateAPI=(fd)=>{
+  return request({
+    url:'/my/article/add',
+    method:'POST',
+    data:fd
+  })
+}
+
+export const getArticleListAPI = ({ pagenum, pagesize, cate_id, state }) => {
+  return request({
+    url: '/my/article/list',
+    params: {
+      pagenum,
+      pagesize,
+      cate_id,
+      state
+    }
+  })
+}
