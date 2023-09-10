@@ -129,3 +129,22 @@ export const getArticleListAPI= ({ pagenum, pagesize, cate_id, state }) => {
     }
   })
 }
+
+export const getArticleDetailFn=(id)=>{
+  return request({
+    url: '/my/article/info',
+    params: {
+      id
+    }
+  })
+}
+
+export const delArticleAPI=(id)=>{
+  return request({
+    url:'/my/article/info',
+    method:'DELETE',
+    params:{
+      id
+    }
+  })
+}

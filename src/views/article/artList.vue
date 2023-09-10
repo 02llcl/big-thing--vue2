@@ -10,7 +10,7 @@
                     <el-form-item label="文章分类">
                         <el-select v-model="q.cate_id" placeholder="请选择分类" size="small">
                             <el-option v-for="obj in cateList" :key="obj.id" :label="obj.cate_name"
-                                :value="obj.cate_id"></el-option>
+                                :value="obj.id"></el-option>
                         </el-select>
                     </el-form-item>
                     <el-form-item label="发布状态" style="margin-left: 15px;">
@@ -20,8 +20,8 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" size="small">筛选</el-button>
-                        <el-button type="info" size="small">重置</el-button>
+                        <el-button type="primary" size="small" @click="initArtListFn">筛选</el-button>
+                        <el-button type="info" size="small" @click="resetListFn">重置</el-button>
                     </el-form-item>
                 </el-form>
                 <!-- 发表文章的按钮 -->
@@ -30,7 +30,11 @@
 
             <!-- 文章表格区域 -->
             <el-table :data="artList" style="width: 100%;" border stripe>
-            <el-table-column label="文章标题" prop="title"></el-table-column>
+            <el-table-column label="文章标题" prop="title">
+                <template v-slot="{ row }">
+                    <el-link type="primary" @click="showDetailFn(row.id)">{{ row.title }}</el-link>
+                </template>
+            </el-table-column>
             <el-table-column label="分类" prop="cate_name"></el-table-column>
             <el-table-column label="发表时间" prop="pub_date">
                 <template v-slot="{ row}">
@@ -38,14 +42,18 @@
                 </template>
             </el-table-column>
             <el-table-column label="状态" prop="state"></el-table-column>
-            <el-table-column label="操作"></el-table-column>
+            <el-table-column label="操作">
+                <template v-slot="{ row }">
+                    <el-button type="danger" size="mini" @click="removeFn(row.id)">删除</el-button>
+                </template>
+            </el-table-column>
             </el-table>
             <!-- 分页区域 -->
             <el-pagination
             @size-change="handleSizeChangeFn"
             @current-change="handleCurrentChangeFn"
             :current-page.sync="q.pagenum"
-            :page-sizes="[2, 3, 5, 10]"
+            :page-sizes="[6, 2, 3, 5, 10]"
             :page-size.sync="q.pagesize"
             layout="total, sizes, prev, pager, next, jumper"
             :total="total"
@@ -92,12 +100,34 @@
                 </el-form-item>
             </el-form>
         </el-dialog>
+
+        <!-- 查看文章详情的对话框 -->
+        <el-dialog title="文章预览" :visible.sync="detailVisible" width="80%">
+        <h1 class="title">{{ artDetail.title }}</h1>
+
+        <div class="info">
+            <span>作者：{{ artDetail.nickname || artDetail.username }}</span>
+            <span>发布时间：{{ $formatDate(artDetail.pub_date) }}</span>
+            <span>所属分类：{{ artDetail.cate_name }}</span>
+            <span>状态：{{ artDetail.state }}</span>
+        </div>
+            
+        <!-- 分割线 -->
+        <el-divider></el-divider>
+        
+        <!-- 文章的封面 -->
+        <img :src="baseURL + artDetail.cover_img" alt="" />
+
+        <!-- 文章的详情 -->
+        <div v-html="artDetail.content" class="detail-box"></div>
+        </el-dialog>
     </div>
 </template>
   
 <script>
+import {baseURL} from '@/utils/request'
 import defaultImg from '@/assets/cover.jpg'
-import { getArtCateListAPI,postCateAPI,getArticleListAPI} from '@/api/index'
+import { getArtCateListAPI,postCateAPI,getArticleListAPI,getArticleDetailFn,delArticleAPI} from '@/api/index'
 export default {
     name: 'ArtList',
     data() {
@@ -127,12 +157,16 @@ export default {
             },
             cateList: [],
             artList: [], // 文章的列表数据
-            total: 0 // 总数据条数
+            total: 0, // 总数据条数
+            detailVisible: false, // 控制文章详情对话框的显示与隐藏
+            artDetail: {}, // 文章的详情信息对象
+            baseURL
         }
     },
     created() {
         this.getCateListFn()
         this.initArtListFn()
+        console.log(this.q)
     },
     methods: {
         async handleClose(done) {
@@ -205,6 +239,7 @@ export default {
             // 关闭对话框
             this.pubDialogVisible = false
             this.initArtListFn()
+            this.resetListFn()
         })
         },
         // 初始化文章列表
@@ -228,6 +263,45 @@ export default {
             this.q.pagenum = nowpage
             // 重新发起请求
             this.initArtListFn()
+        },
+        // 重置文章的列表数据
+        resetListFn() {
+        // 1. 重置查询参数对象
+        this.q = {
+            pagenum: 1,
+            pagesize: 5,
+            cate_id: '',
+            state: ''
+        }
+        // 2. 重新发起请求
+        this.initArtListFn()
+        },
+        async showDetailFn(airid){
+            const { data: res } = await getArticleDetailFn(airid)
+            if (res.code !== 0) return this.$message.error('获取文章详情失败!')
+            this.artDetail = res.data
+            // 展示对话框
+            this.detailVisible = true
+            
+        },
+        async removeFn(id){
+             // 1. 询问用户是否要删除
+            const confirmResult = await this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).catch(err => err)
+
+            // 2. 取消了删除
+            if (confirmResult === 'cancel') return
+
+            // 执行删除的操作
+            const { data: res } = await delArticleAPI(id)
+
+            if (res.code !== 0) return this.$message.error('删除失败!')
+            this.$message.success('删除成功!')
+            // 刷新列表数据
+            this.resetListFn()
         }
     }
 }
@@ -255,6 +329,27 @@ export default {
 }
 .el-pagination {
   margin-top: 15px;
+}
+.title {
+  font-size: 24px;
+  text-align: center;
+  font-weight: normal;
+  color: #000;
+  margin: 0 0 10px 0;
+}
+
+.info {
+  font-size: 12px;
+  span {
+    margin-right: 20px;
+  }
+}
+
+// 修改 dialog 内部元素的样式，需要添加样式穿透
+::v-deep .detail-box {
+  img {
+    width: 500px;
+  }
 }
 </style>
   

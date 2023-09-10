@@ -35,3 +35,5 @@ myaxios.interceptors.response.use(function (response) {
     return Promise.reject(error)
   })
 export default myaxios
+
+export const baseURL = 'http://big-event-vue-api-t.itheima.net'
